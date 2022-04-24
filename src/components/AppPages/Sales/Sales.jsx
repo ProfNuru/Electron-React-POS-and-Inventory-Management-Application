@@ -25,11 +25,13 @@ export class Sales extends Component {
 
     this.state = {
       searchItemValue:'',
+      searchSaleValue:'',
       selectedCustomer:0,
       cartItems:[],
       toggleItemsSales:true,
       subtotal:window.api.currency(0),
       grandTotal:window.api.currency(0),
+      payment:0,
       discount:0,
       tax:0.00,
       taxValue:window.api.currency(0),
@@ -45,6 +47,17 @@ export class Sales extends Component {
       printSize:'a4',
       invoiceUID:''
     }
+  }
+
+  getPaymentStatus=()=>{
+    if(this.state.payment === 0){
+      return 3
+    }else if(this.state.payment < window.api.currencyValue(this.state.grandTotal)){
+      return 2
+    }else if(this.state.payment >= window.api.currencyValue(this.state.grandTotal)){
+      return 1
+    }
+    return 0;
   }
 
   getItem = (itemID)=>{
@@ -184,7 +197,14 @@ export class Sales extends Component {
 
   handlePaymentStatusField = (value)=>{
     this.setState({
-      paymentStatus:parseInt(value)
+      paymentStatus:parseInt(value),
+      payment:parseInt(value)===1 ? window.api.currencyValue(this.state.grandTotal) : 0
+    });
+  }
+
+  handlePaymentField = (value)=>{
+    this.setState({
+      payment:window.api.currencyValue(value)
     });
   }
 
@@ -192,6 +212,7 @@ export class Sales extends Component {
     let subTotal = this.state.cartItems.reduce((total,nextItem)=>window.api.addCurrencies(total, window.api.multiplyCurrencies(nextItem.qty,nextItem.selling_unit_price)),0)
     let taxValue = window.api.multiplyCurrencies(this.state.tax/100, subTotal);
     let grandTotal = window.api.subtractCurrencies(subTotal,this.state.discount);
+    // grandTotal = window.api.subtractCurrencies(grandTotal,this.state.payment);
     grandTotal = window.api.addCurrencies(grandTotal,taxValue);
     grandTotal = window.api.addCurrencies(grandTotal,window.api.currency(this.state.shipping));
     this.setState({
@@ -214,6 +235,22 @@ export class Sales extends Component {
         })
       },3000)
       return;
+    }
+    if(this.state.selectedCustomer < 1){
+      if(this.state.payment < window.api.currencyValue(this.state.grandTotal)){
+        this.setState({
+          extrasError:true,
+          extrasErrorMsg:'Select Customer for Credit Sale!'
+        })
+        setTimeout(()=>{
+          this.setState({
+            extrasError:false,
+            extrasErrorMsg:''
+          })
+        },3000)
+        return;
+      }
+      console.log('No customer selected');
     }
     if(this.state.saleStatus < 1){
       this.setState({
@@ -241,12 +278,20 @@ export class Sales extends Component {
       },3000)
       return;
     }
-
+    let iuid = '';
+    let date = new Date();
+    let uid_date = date.toLocaleDateString().split('/');
+    iuid += uid_date[0] + uid_date[1];
+    iuid += uid_date[2].slice(2,4);
+    let uid_num = this.props.invoices.length + 1;
+    iuid += uid_num.toString();
+    this.setState({invoiceUID:iuid});
     this.setState({showPrintModal:true});
   }
 
   proceedToPrintInvoice=()=>{
     let invoiceFields = {
+      invoiceUID: this.state.invoiceUID,
       customerID:this.state.selectedCustomer,
       numberOfItems:this.state.cartItems.length,
       subTotal:window.api.currencyValue(this.state.subtotal),
@@ -256,22 +301,25 @@ export class Sales extends Component {
       taxPercent:window.api.currencyValue(this.state.tax),
       taxValue:window.api.currencyValue(this.state.taxValue),
       deliveryStatus:this.state.saleStatus===1 ? 'delivered' : 'ordered',
-      paymentStatus:this.state.paymentStatus,
+      paymentStatus:this.getPaymentStatus(),
+      paymentAmount:this.state.payment,
       date:new Date().getTime()
     }
     let new_invoice_feedback = window.api.insertNewData('new-invoice', invoiceFields);
-    this.setState({invoiceUID:new_invoice_feedback.ID});
 
     let soldItems = {
       items:this.state.cartItems,
       invoiceID:new_invoice_feedback.ID
     }
     let sales_feedback = window.api.insertNewData('new-sales', soldItems);
+    
     if(sales_feedback.success){
       this.setState({
         cartItems:[],
         saleStatus:1,
         paymentStatus:1,
+        payment:0,
+        selectedCustomer:0,
         extrasSuccess:true,
         extrasSuccessMsg:'Sale Complete',
         showPrintModal:false,
@@ -283,6 +331,8 @@ export class Sales extends Component {
           extrasSuccessMsg:''
         })
       },3000)
+
+      this.props.reloadData();
     }    
   }
 
@@ -291,6 +341,8 @@ export class Sales extends Component {
       cartItems:[],
       saleStatus:1,
       paymentStatus:1,
+      payment:0,
+      selectedCustomer:0,
       extrasError:true,
       extrasErrorMsg:'Cart Cleared'
     },()=>this.calculateTotals())
@@ -311,13 +363,22 @@ export class Sales extends Component {
 
           <div className='salesSection'>
             <div className='itemsSection'>
+            {this.state.toggleItemsSales ?
               <div className='searchItemDiv'>
                 <Form.Group controlId="searchItems">
                   <Form.Control type="text" placeholder="Search Item..." 
                   value={this.state.searchItemValue} 
                   onChange={(e)=>this.setState({searchItemValue:e.target.value})} />
                 </Form.Group>
-              </div>
+              </div> :
+              <div className='searchItemDiv'>
+              <Form.Group controlId="searchSales">
+                <Form.Control type="text" placeholder="Search Invoice by Ref or Customer name..." 
+                value={this.state.searchSaleValue} 
+                onChange={(e)=>this.setState({searchSaleValue:e.target.value})} />
+              </Form.Group>
+            </div>
+            }
 
               <div className="itemsForSale">
                 <Nav variant="tabs" defaultActiveKey="#" style={{backgroundColor:'#000'}}>
@@ -325,7 +386,10 @@ export class Sales extends Component {
                     <Nav.Link href="#" onClick={()=>this.setState({toggleItemsSales:true})}>Items</Nav.Link>
                   </Nav.Item>
                   <Nav.Item>
-                    <Nav.Link eventKey="sales-table" onClick={()=>this.setState({toggleItemsSales:false})}>Recent Sales</Nav.Link>
+                    <Nav.Link eventKey="sales-table" 
+                      onClick={()=>this.setState({toggleItemsSales:false})}>
+                        Recent Invoices
+                      </Nav.Link>
                   </Nav.Item>
                 </Nav>
 
@@ -344,20 +408,25 @@ export class Sales extends Component {
                   <tbody>
                     {this.props.items.filter((s)=>(JSON.stringify(s).toLowerCase()
                       .includes(this.state.searchItemValue.toLowerCase())))
-                      .map((item)=><tr key={item.item_id}>
-                      <td>{item.item_id}</td>
-                      <td>{item.item}</td>
-                      <td>{item.description}</td>
-                      <td>{item.available_qty}</td>
-                      <td>{item.selling_unit_price}</td>
-                      <td style={{textAlign:'center'}}>{this.itemInCart(item.item_id) ?
-                        <Button variant='secondary' disabled>Item In Cart</Button> :
-                        <Button variant='outline-success' onClick={()=>this.addItemTocart(item.item_id)}><FontAwesomeIcon icon={faCartShopping} /> Add To Cart</Button>
-                      }</td>
-                    </tr>)}
+                      .filter((item)=>item.available_qty > 0 & item.selling_unit_price > 0)
+                      .map((item)=>{
+                      return <tr key={item.item_id}>
+                          <td>{item.item_id}</td>
+                          <td>{item.item}</td>
+                          <td>{item.description}</td>
+                          <td>{item.available_qty}</td>
+                          <td>{item.selling_unit_price}</td>
+                          <td style={{textAlign:'center'}}>{this.itemInCart(item.item_id) ?
+                            <Button variant='secondary' disabled>Item In Cart</Button> :
+                            <Button variant='outline-success' onClick={()=>this.addItemTocart(item.item_id)}><FontAwesomeIcon icon={faCartShopping} /> Add To Cart</Button>
+                          }</td>
+                      </tr>
+                    })}
                   </tbody>
                 </Table> :
-                <RecentSalesTable sales={this.props.sales} />
+                <RecentSalesTable getCustomer={this.getCustomer} 
+                  sales={this.props.sales} invoices={this.props.invoices}
+                  filterInvoices={this.state.searchSaleValue} />
                 }
               </div>
             </div>
@@ -366,7 +435,9 @@ export class Sales extends Component {
               <h5 style={{textAlign:'center'}}>INVOICE</h5>
               <div className='selectCustomerDiv'>
                 <Form.Group controlId="selectCustomer">
-                  <Form.Select aria-label="Select Item to purchase" onChange={this.handleSelectCustomer}>
+                  <Form.Select aria-label="Select Item to purchase" 
+                      value={this.state.selectedCustomer}
+                      onChange={this.handleSelectCustomer}>
                       <option value={0}>::SELECT CUSTOMER::</option>
                       {this.props.customers.length > 0 ? this.props.customers.map((customer)=>(<option key={customer.customer_id} value={customer.customer_id}>{customer.customer_name}</option>)) : <option>You have no customers added yet</option>}
                   </Form.Select>
@@ -426,6 +497,10 @@ export class Sales extends Component {
                             <td>{window.api.currency(this.state.shipping)}</td>
                           </tr>
                           <tr>
+                            <td>Payment</td>
+                            <td>{window.api.currency(this.state.payment)}</td>
+                          </tr>
+                          <tr>
                             <th>Grand Total</th>
                             <th>{window.api.currency(this.state.grandTotal)}</th>
                           </tr>
@@ -439,9 +514,12 @@ export class Sales extends Component {
                       handleShipping={this.handleShippingField}
                       handleNote={this.handleNoteField}
                       paymentStatuses={this.props.payment_statuses}
+                      paymentAmt={this.state.payment}
+                      grandtotal={this.state.grandTotal}
                       resetCart={this.resetCart}
                       handleDelivery={this.handleDeliveryStatusField}
                       handlePayment={this.handlePaymentStatusField}
+                      handlePaymentAmt={this.handlePaymentField}
                       handleCheckout={this.completeSale} />
                   
                 </div>
@@ -476,7 +554,8 @@ export class Sales extends Component {
                 />
                   <A4PrintingTemplate cartItems={this.state.cartItems} getCustomer={this.getCurrentCustomer}
                     invoiceDate={new Date().toLocaleDateString()} discount={this.state.discount}
-                    shipping={this.state.shipping} tax={this.state.tax} taxValue={this.state.taxValue}
+                    payment={this.state.payment} shipping={this.state.shipping} 
+                    tax={this.state.tax} taxValue={this.state.taxValue}
                     saleStatus={this.state.saleStatus} paymentStatus={this.state.paymentStatus}
                     invoiceUniqueID={this.state.invoiceUID} subtotal={this.state.subtotal}
                     grandtotal={this.state.grandTotal} ref={el => (this.componentRef = el)} />
@@ -490,7 +569,8 @@ export class Sales extends Component {
                 />
                   <ThermalPrintingTemplate cartItems={this.state.cartItems} getCustomer={this.getCurrentCustomer}
                     invoiceDate={new Date().toLocaleDateString()} discount={this.state.discount}
-                    shipping={this.state.shipping} tax={this.state.tax} taxValue={this.state.taxValue}
+                    payment={this.state.payment} shipping={this.state.shipping} 
+                    tax={this.state.tax} taxValue={this.state.taxValue}
                     saleStatus={this.state.saleStatus} paymentStatus={this.state.paymentStatus}
                     invoiceUniqueID={this.state.invoiceUID} subtotal={this.state.subtotal}
                     grandtotal={this.state.grandTotal} ref={el => (this.componentRef1 = el)} />

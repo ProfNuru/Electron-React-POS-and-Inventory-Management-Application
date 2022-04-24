@@ -8,13 +8,24 @@ import FormControl from 'react-bootstrap/FormControl';
 import Form from 'react-bootstrap/Form';
 import Button from 'react-bootstrap/Button';
 
-const CartExtras = ({handleDiscount,handleTax,handleShipping,handleNote,paymentStatuses,resetCart,handleDelivery,handlePayment,handleCheckout}) => {
+const CartExtras = ({handleDiscount,handleTax,handleShipping,
+                    handleNote,paymentStatuses,resetCart,
+                    handleDelivery,handlePayment,handleCheckout,
+                    handlePaymentAmt,getPaymentStatus,paymentAmt,
+                    grandtotal}) => {
     const [discount, setDiscount] = useState(0);
     const [tax, setTax] = useState(0);
     const [shipping, setShipping] = useState(0);
     const [deliveryStatus, setDeliveryStatus] = useState(1);
-    const [paymentStatus, setPaymentStatus] = useState(1);
+    const [paymentStatus, setPaymentStatus] = useState(3);
     const [saleNote, setSaleNote] = useState('');
+    const [paymentAmount,setPaymentAmount] = useState(paymentAmt);
+
+    const paymentFieldEvent=(e)=>{
+        setPaymentAmount(e.target.value);
+        handlePaymentAmt(e.target.value);
+
+    }
 
     const discountFieldEvent=(e)=>{
         setDiscount(e.target.value);
@@ -47,10 +58,11 @@ const CartExtras = ({handleDiscount,handleTax,handleShipping,handleNote,paymentS
 
     const checkoutSale=()=>{
         handleCheckout();
+        setPaymentAmount(0);
     }
 
     const clearCart=()=>{
-        // console.log("Reset Cart");
+        
         setDiscount(0);
         handleDiscount(0);
         setTax(0);
@@ -60,13 +72,28 @@ const CartExtras = ({handleDiscount,handleTax,handleShipping,handleNote,paymentS
         setSaleNote('');
         handleNote('');
         setPaymentStatus(1);
+        setPaymentAmount(0);
         setDeliveryStatus(1);
         resetCart();
     }
 
   return (
     <div className="cartExtras">
-        <Form.Group controlId="salesDiscount">
+        <Form.Group controlId="salesPayment" id='editPaymentFormField'>
+            <Form.Label>Payment</Form.Label>
+            <InputGroup>
+            <InputGroup.Text id="sales-currency">GHC</InputGroup.Text>
+            <FormControl
+                placeholder="0.00"
+                aria-label="sales-currency"
+                aria-describedby="sales-currency"
+                value={paymentAmount}
+                onChange={paymentFieldEvent}
+            />
+            </InputGroup>
+        </Form.Group>
+
+        <Form.Group controlId="salesDiscount" id='editDiscountFormField'>
             <Form.Label>Discount</Form.Label>
             <InputGroup>
             <InputGroup.Text id="sales-currency">GHC</InputGroup.Text>
@@ -80,7 +107,7 @@ const CartExtras = ({handleDiscount,handleTax,handleShipping,handleNote,paymentS
             </InputGroup>
         </Form.Group>
 
-        <Form.Group controlId="salesTax">
+        <Form.Group controlId="salesTax" id='editTaxFormField'>
             <Form.Label>Tax</Form.Label>
             <InputGroup>
             <FormControl
@@ -94,7 +121,7 @@ const CartExtras = ({handleDiscount,handleTax,handleShipping,handleNote,paymentS
             </InputGroup>
         </Form.Group>
         
-        <Form.Group controlId="salesShipping">
+        <Form.Group controlId="salesShipping" id='editShippingFormField'>
             <Form.Label>Shipping</Form.Label>
             <InputGroup>
             <InputGroup.Text id="shipping-cost">GHC</InputGroup.Text>
@@ -108,7 +135,7 @@ const CartExtras = ({handleDiscount,handleTax,handleShipping,handleNote,paymentS
             </InputGroup>
         </Form.Group>
         
-        <Form.Group controlId="salesStatus">
+        <Form.Group controlId="salesStatus" id='editSalesStatusFormField'>
             <Form.Label>Delivery Status</Form.Label>
             <Form.Select aria-label="Select Item to purchase" value={deliveryStatus} onChange={deliveryStatusFieldEvent}>
                 <option value={0}>::CHOOSE DELIVERY STATUS::</option>
@@ -117,28 +144,21 @@ const CartExtras = ({handleDiscount,handleTax,handleShipping,handleNote,paymentS
             </Form.Select>
         </Form.Group>
         
-        <Form.Group controlId="salesPaymentStatus">
+        <div id='editPaymentStatusFormField'></div>
+
+        {/* <Form.Group controlId="salesPaymentStatus" id='editPaymentStatusFormField'>
             <Form.Label>Payment Status</Form.Label>
-            <Form.Select aria-label="Select payment status" value={paymentStatus} onChange={paymentStatusFieldEvent}>
+            <Form.Select aria-label="Select payment status" value={paymentStatus} 
+            onChange={paymentStatusFieldEvent} disabled>
                 <option value={0}>::CHOOSE PAYMENT STATUS::</option>
                 {paymentStatuses.map((status)=><option key={status.payment_status_id} value={status.payment_status_id}>
                     {status.payment_status}
                 </option>)}
             </Form.Select>
-        </Form.Group>
+        </Form.Group> */}
 
-        <Form.Group controlId="noteToCustomer">
-            <Form.Label>Note</Form.Label>
-            <InputGroup>
-            <FormControl as="textarea" aria-label="Note to customer" 
-                value={saleNote}
-                onChange={noteFieldEvent}
-            />
-            </InputGroup>
-        </Form.Group>
-
-        <Button variant="success" size="lg"><FontAwesomeIcon icon={faPrint} onClick={checkoutSale} /> Print Invoice</Button>
-        <Button variant="danger" size="lg"><FontAwesomeIcon icon={faBroom} onClick={clearCart} /> Clear</Button>
+        <Button variant="success" size="lg" id='checkoutCompleteSaleBtn'><FontAwesomeIcon icon={faPrint} onClick={checkoutSale} /> Print Invoice</Button>
+        <Button variant="danger" size="lg" id='clearSaleBtn'><FontAwesomeIcon icon={faBroom} onClick={clearCart} /> Clear</Button>
     </div>
         
   )

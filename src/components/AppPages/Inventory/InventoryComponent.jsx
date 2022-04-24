@@ -172,15 +172,14 @@ export class InventoryComponent extends Component {
             {this.state.editItemFormSuccess && <PageTitle className="pageNotifications"><Alert variant='success'>{this.state.editItemFormSuccessMessage}</Alert></PageTitle>}
             {this.state.inventoryPageSuccess && <PageTitle className="pageNotifications"><Alert variant='success'>{this.state.inventoryPageSuccessMessage}</Alert></PageTitle>}
             {this.state.inventoryPageError && <PageTitle className="pageNotifications"><Alert variant='danger'>{this.state.inventoryPageErrorMessage}</Alert></PageTitle>}
-            {this.state.items.filter((item)=>item.available_qty < 1).length > 0 && <OutOfStockItems toggleViewModal={this.viewItem} toggleEditModal={this.editItem} items={this.state.items.filter((item)=>item.available_qty < 1)} />}
-            {this.state.items.filter((item)=>item.available_qty > 0).length > 0 && <InStockItems deleteItem={this.deleteItem} toggleViewModal={this.viewItem} toggleEditModal={this.editItem} items={this.state.items.filter((item)=>item.available_qty > 0)} />}
+            {this.props.all_items.filter((item)=>item.available_qty < 1).length > 0 && <OutOfStockItems toggleViewModal={this.viewItem} toggleEditModal={this.editItem} items={this.props.all_items.filter((item)=>item.available_qty < 1)} />}
+            {this.props.all_items.filter((item)=>item.available_qty > 0).length > 0 && <InStockItems deleteItem={this.deleteItem} toggleViewModal={this.viewItem} toggleEditModal={this.editItem} items={this.props.all_items.filter((item)=>item.available_qty > 0)} />}
         </div>
         <div className="inventory-side">
             <AddNewItem reloadData={this.getStatesData} />
             <MakeNewPurchase reloadData={this.getStatesData} togglePageNotification={this.inventoryPageNotification} suppliers={this.props.suppliers} getItem={this.getItem} all_items={this.state.items} />
             <PurchasesList getSupplier={this.getSupplier} getItem={this.getItem} purchases={this.props.purchases} />
         </div>
-
 
         {/* Edit Item Modal */}
         <Modal show={this.state.showEditItemForm} onHide={this.hideEditItem}>

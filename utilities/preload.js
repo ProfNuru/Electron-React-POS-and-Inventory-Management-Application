@@ -3,7 +3,6 @@ const { ipcRenderer } = require("electron");
 const currency = require('currency.js');
 const printJS = require("print-js");
 
-
 const API = {
     updatePurchasedItem:(signal,value)=>{return ipcRenderer.send(signal,value)},
     sendAsynchronousIPC:(signal)=>{return ipcRenderer.sendSync(signal)},
@@ -25,8 +24,6 @@ const API = {
             style:styles
         })
     }
-
 }
-
 
 electron.contextBridge.exposeInMainWorld("api", API);

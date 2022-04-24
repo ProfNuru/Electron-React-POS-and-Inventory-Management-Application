@@ -6,6 +6,7 @@ import InventoryComponent from '../AppPages/Inventory/InventoryComponent';
 import Suppliers from '../AppPages/Suppliers/Suppliers';
 import Customers from '../AppPages/Customers/Customers';
 import Sales from '../AppPages/Sales/Sales';
+import RevenueComponent from '../AppPages/Revenue/RevenueComponent';
 
 export class AppContainer extends Component {
   constructor(){
@@ -71,6 +72,17 @@ export class AppContainer extends Component {
     this.setState({
         customers:customers.data,
     });
+
+    
+    const all_invoices = window.api.sendAsynchronousIPC('get-all-invoices');
+    this.setState({
+        invoices:all_invoices.data,
+    });
+    
+    const all_sales = window.api.sendAsynchronousIPC('get-all-sales');
+    this.setState({
+        sales:all_sales.data,
+    });
   }
 
   componentDidMount() {
@@ -84,15 +96,24 @@ export class AppContainer extends Component {
           <div id="app-pages">
             {/* {this.state.pagesDisplayed.showDashboard && <DashboardComponent />}
             {this.state.pagesDisplayed.showInventory && <InventoryComponent />} */}
-            <DashboardComponent all_items={this.state.items} visibility={this.state.pagesDisplayed.showDashboard} />
+            <DashboardComponent all_items={this.state.items} invoices={this.state.invoices}
+            all_sales={this.state.sales} customers={this.state.customers}
+            visibility={this.state.pagesDisplayed.showDashboard} />
             <Sales reloadData={this.getStatesData} payment_statuses={this.state.payment_statuses} 
                 sales={this.state.sales} items={this.state.items} customers={this.state.customers} 
+                invoices={this.state.invoices}
                 visibility={this.state.pagesDisplayed.showPos} />
             <InventoryComponent reloadData={this.getStatesData} purchases={this.state.purchases} 
                 suppliers={this.state.suppliers} all_items={this.state.items} visibility={this.state.pagesDisplayed.showInventory} />
             <Suppliers reloadData={this.getStatesData} visibility={this.state.pagesDisplayed.showSuppliers} />
-            <Customers reloadData={this.getStatesData} visibility={this.state.pagesDisplayed.showCustomers} />
+            <Customers reloadData={this.getStatesData} invoices={this.state.invoices}
+                customers={this.state.customers}
+                visibility={this.state.pagesDisplayed.showCustomers} />
             
+            <RevenueComponent all_items={this.state.items} invoices={this.state.invoices}
+            all_sales={this.state.sales} customers={this.state.customers}
+            visibility={this.state.pagesDisplayed.showSales} />
+
           </div>
       </AppWrapper>
     )

@@ -6,7 +6,7 @@ class A4PrintingTemplate extends Component {
         const customer = this.props.getCustomer();
         return (
             <A4PrintTemplate>
-                <div id="invoiceholder" ref={(el)=>(this.componentRef=el)}>
+                <div id="invoiceholder">
                     <h1>INVOICE #{this.props.invoiceUniqueID}</h1>
                     <p className='businessDetails'><strong>GuildBytes Tech Solutions</strong><br/>
                     Gurugu Road, Near Koyla junction, Tamale<br/>
@@ -18,8 +18,8 @@ class A4PrintingTemplate extends Component {
                             {customer.phone}</h5>}
                         </div>
                         <div className='billDetails'>
-                            <h5>Date: {this.props.invoiceDate} (m/d/y)<br />
-                            Amount Due: {window.api.currency(this.props.grandtotal)}</h5>
+                            <h5>Date: {this.props.invoiceDate}<br />
+                            Amount Due: <span>{window.api.subtractCurrencies(this.props.grandtotal,this.props.payment)}</span></h5>
                         </div>
                     </div>
         
@@ -62,13 +62,13 @@ class A4PrintingTemplate extends Component {
                                     <td colSpan={5} className='invoiceFootTitles'>Discount</td>
                                     <td>{window.api.currency(this.props.discount)}</td>
                                 </tr>}
-                                <tr>
-                                    <td colSpan={5} className='invoiceFootTitles'>Paid</td>
-                                    <td>0.00</td>
-                                </tr>
                                 <tr className='grandTotalEmphasis'>
                                     <td colSpan={5} className='invoiceFootTitles'>Grand Total</td>
                                     <td>{window.api.currency(this.props.grandtotal)}</td>
+                                </tr>
+                                <tr className='grandTotalEmphasis'>
+                                    <td colSpan={5} className='invoiceFootTitles'>Paid</td>
+                                    <td>{window.api.currency(this.props.payment)}</td>
                                 </tr>
                             </tfoot>
                         </table>

@@ -11,6 +11,7 @@ import Alert from 'react-bootstrap/Alert';
 import Table from 'react-bootstrap/Table';
 
 import {faEdit, faEye, faPlus, faSearch, faTrash} from '@fortawesome/free-solid-svg-icons';
+import Debtors from './Debtors';
 
 export class Customers extends Component {
     constructor(){
@@ -97,6 +98,26 @@ export class Customers extends Component {
             return;
         }
 
+        this.getStatesData();
+    }
+
+    pageNotification = (feedback)=>{
+        if(feedback.success){
+            this.setState({customerPageSuccess:true})
+            this.setState({customerPageSuccessMessage:feedback.msg})
+            setTimeout(()=>{
+                this.setState({customerPageSuccess:false})
+                this.setState({customerPageSuccessMessage:''})
+            },3000);
+        }else{
+            this.setState({customerPageError:true})
+            this.setState({customerPageErrorMessage:feedback.msg})
+            setTimeout(()=>{
+                this.setState({customerPageError:false})
+                this.setState({customerPageErrorMessage:''})
+            },3000);
+            return;
+        }
         this.getStatesData();
     }
 
@@ -393,6 +414,9 @@ export class Customers extends Component {
 
               </div>
           </CustomersList>
+          <div>
+              <Debtors pageNotification={this.pageNotification} invoices={this.props.invoices} customers={this.props.customers} />
+          </div>
       </CustomersPage>
     )
   }

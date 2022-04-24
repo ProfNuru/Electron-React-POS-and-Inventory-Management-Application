@@ -61,9 +61,39 @@ export const SalesPage = styled.div`
         display:grid;
         grid-template-columns: 1.5fr 1fr;
     }
+    & .cartExtras #editDiscountFormField{
+        grid-area:'discount';
+    }
+    & .cartExtras #editTaxFormField{
+        grid-area:'tax';
+    }
+    & .cartExtras #editShippingFormField{
+        grid-area:'shipping';
+    }
+    & .cartExtras #editSalesStatusFormField{
+        grid-area:'salesStatus';
+    }
+    & .cartExtras #editPaymentStatusFormField{
+        grid-area:'paymentStatus';
+    }
+    & .cartExtras #editNoteFormField{
+        grid-area:'note';
+    }
+    & .cartExtras #checkoutCompleteSaleBtn{
+        grid-area:'checkoutbtn';
+    }
+    & .cartExtras #clearSaleBtn{
+        grid-area:'clearbtn';
+    }
+    & .cartExtras #editPaymentFormField{
+        grid-area:'payments';
+    }
     & .cartExtras{
         display:grid;
-        grid-template-columns: 1fr 1fr;
+        grid-template-areas:'payments discount'
+                            'tax shipping'
+                            'salesStatus paymentStatus'
+                            'checkoutbtn clearbtn';
         gap: 10px;
         margin: 5px;
     }

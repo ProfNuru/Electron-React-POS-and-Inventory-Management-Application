@@ -72,6 +72,7 @@ class Database{
         this.DB_CONN.run(payment_status_qry);
 
         let inv_qry = "CREATE TABLE IF NOT EXISTS invoices (invoice_id INTEGER PRIMARY KEY,"+
+                    "invoice_uid TEXT NOT NULL,"+
                     "customer_id INTEGER NULL,"+
                     "number_of_items INTEGER NOT NULL,"+
                     "sub_total NUMERIC NOT NULL,"+
@@ -82,16 +83,18 @@ class Database{
                     "tax_value NUMERIC NOT NULL,"+
                     "delivery_status TEXT NOT NULL,"+
                     "payment_status INTEGER NOT NULL,"+
+                    "payment_amount NUMERIC NOT NULL,"+
                     "date INTEGER NOT NULL,"+
                     "FOREIGN KEY (customer_id) REFERENCES customers (customer_id) ON DELETE CASCADE ON UPDATE NO ACTION"+
                   ")";
         this.DB_CONN.run(inv_qry);
 
-        //sale_id,invoice_id,item_id,qty,unit_price
+        //sale_id,invoice_id,item_id,qty,unit_price,cost_price
         let sale_qry = "CREATE TABLE IF NOT EXISTS sales (sale_id INTEGER PRIMARY KEY,"+
                         "invoice_id INTEGER NOT NULL,"+
                         "item_id INTEGER NOT NULL,"+
                         "qty INTEGER NOT NULL,"+
+                        "cost_price NUMERIC NOT NULL,"+
                         "unit_price NUMERIC NOT NULL,"+
                         "FOREIGN KEY (invoice_id) REFERENCES invoices (invoice_id) ON DELETE CASCADE ON UPDATE NO ACTION,"+
                         "FOREIGN KEY (item_id) REFERENCES items (item_id) ON DELETE CASCADE ON UPDATE NO ACTION"+
@@ -244,13 +247,15 @@ class Database{
         });
     }
 
-    //customer_id,number_of_items,sub_total,grand_total,discount,shipping,tax_percent,tax_value,delivery_status,payment_status,date
+    //customer_id,number_of_items,sub_total,grand_total,discount,shipping,tax_percent,
+    //tax_value,delivery_status,payment_status,payment_amount,date
     add_invoice(new_inv){
+        console.log(new_inv);
         return new Promise((resolve,reject)=>{
-            let sql = `INSERT INTO invoices (customer_id,number_of_items,sub_total,grand_total,discount,shipping,tax_percent,tax_value,delivery_status,payment_status,date) VALUES (?,?,?,?,?,?,?,?,?,?,?)`;
-            this.DB_CONN.run(sql, [new_inv.customerID,new_inv.numberOfItems,new_inv.subTotal,
+            let sql = `INSERT INTO invoices (invoice_uid,customer_id,number_of_items,sub_total,grand_total,discount,shipping,tax_percent,tax_value,delivery_status,payment_status,payment_amount,date) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?)`;
+            this.DB_CONN.run(sql, [new_inv.invoiceUID,new_inv.customerID,new_inv.numberOfItems,new_inv.subTotal,
                 new_inv.grandTotal,new_inv.discount,new_inv.shipping,new_inv.taxPercent,
-                new_inv.taxValue,new_inv.deliveryStatus,new_inv.paymentStatus,
+                new_inv.taxValue,new_inv.deliveryStatus,new_inv.paymentStatus,new_inv.paymentAmount,
                 new_inv.date], function(err){
                 if(err){
                     console.log(err);
@@ -267,17 +272,18 @@ class Database{
             this.DB_CONN.serialize(()=>{
                 let invID = salesData.invoiceID;
                 for(let i=0; i<salesData.items.length; i++){
-                    let sql = `INSERT INTO sales (invoice_id,item_id,qty,unit_price) VALUES (?,?,?,?)`;
+                    let sql = `INSERT INTO sales (invoice_id,item_id,qty,unit_price,cost_price) VALUES (?,?,?,?,?)`;
                     this.DB_CONN.run(sql, [invID,salesData.items[i].item_id,
-                        salesData.items[i].qty,salesData.items[i].selling_unit_price], function(err){
+                        salesData.items[i].qty,salesData.items[i].selling_unit_price,
+                        salesData.items[i].cost_unit_price], function(err){
                         if(err){
                             console.log(err);
-                            reject({success:false,msg:err.code});   
+                            reject({success:false,msg:err.code});
                         }
                     })
                 }
             });
-            resolve({success:true,msg:'All sales saved'});
+            resolve({success:true,msg:'All sales saved',sales_data:salesData});
         });
     }
 
@@ -323,6 +329,20 @@ class Database{
 
         });
     }
+
+    add_invoice_payment(payment){
+        return new Promise((resolve,reject)=>{
+            let sql = `UPDATE invoices SET payment_amount=? WHERE invoice_id=?`;
+            this.DB_CONN.run(sql, [payment.amount,payment.invoice], function(err){
+                if(err){
+                    console.log(err);
+                    reject({success:false,msg:err.code});
+                }
+                resolve({success:true,msg:'Payment Completed'});                
+            });
+
+        });
+    }
     
     update_item_qty(item_id,add_qty,cost){
         return new Promise((resolve,reject)=>{
@@ -337,7 +357,40 @@ class Database{
 
         });
     }
+    
+    update_items_qty(sales_data){
+        return new Promise((resolve,reject)=>{
+            var sql = '';
+            for(let i=0;i<sales_data.length;i++){
+                if(i === sales_data.length - 1){
+                    sql += `UPDATE items SET available_qty = ${sales_data[i].available_qty >= sales_data[i].qty ? sales_data[i].available_qty - sales_data[i].qty : sales_data[i].available_qty} WHERE item_id=${sales_data[i].item_id}`;
+                }else{
+                    sql += `UPDATE items SET available_qty = ${sales_data[i].available_qty >= sales_data[i].qty ? sales_data[i].available_qty - sales_data[i].qty : sales_data[i].available_qty} WHERE item_id=${sales_data[i].item_id};`;
+                }
+            }
+            console.log(sql);
+            this.DB_CONN.run(sql, function(err){
+                if(err){
+                    console.log(err);
+                    reject({success:false,msg:err.code});
+                }
+                resolve({success:true,msg:'Items updated'});          
+            });
+        });
+    }
 
+    subtract_item_qty(item){
+        return new Promise((resolve,reject)=>{
+            let sql = `UPDATE items SET available_qty = ? WHERE item_id=?`;
+            this.DB_CONN.run(sql, [item.available_qty > item.qty ? item.available_qty - item.qty : item.available_qty,item.item_id ], function(err){
+                if(err){
+                    console.log(err);
+                    reject({success:false,msg:err.code});
+                }
+                resolve({success:true,msg:'Item updated'});                
+            });
+        });
+    }
 }
 
 module.exports = Database;

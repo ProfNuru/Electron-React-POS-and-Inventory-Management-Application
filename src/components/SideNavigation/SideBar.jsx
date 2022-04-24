@@ -25,13 +25,13 @@ const SideBar = ({toggleWindows,pagesShown}) => {
           <FontAwesomeIcon icon={faBoxesPacking}></FontAwesomeIcon>
           <small>Suppliers</small>
         </SideBarButton>
-        <SideBarButton active={pagesShown.showSales} onClick={()=>toggleWindows('showSales')}>
-          <FontAwesomeIcon icon={faChartLine}></FontAwesomeIcon>
-          <small>Analytics</small>
-        </SideBarButton>
         <SideBarButton active={pagesShown.showCustomers} onClick={()=>toggleWindows('showCustomers')}>
           <FontAwesomeIcon icon={faChalkboardUser}></FontAwesomeIcon>
           <small>Customers</small>
+        </SideBarButton>
+        <SideBarButton active={pagesShown.showSales} onClick={()=>toggleWindows('showSales')}>
+          <FontAwesomeIcon icon={faChartLine}></FontAwesomeIcon>
+          <small>Revenue</small>
         </SideBarButton>
         <SideBarButton active={pagesShown.showSettings} onClick={()=>toggleWindows('showSettings')}>
           <FontAwesomeIcon icon={faGear}></FontAwesomeIcon>

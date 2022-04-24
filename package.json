@@ -1,6 +1,9 @@
 {
   "name": "chanji-pos-frontend",
+  "productName":"Chanji Sales & Inventory",
   "version": "0.1.0",
+  "author": "GuildBytes Tech Solutions",
+  "description":"Print Invoices, Manage Customers, Suppliers, Sales and Stock",
   "private": true,
   "dependencies": {
     "@fortawesome/fontawesome-svg-core": "^6.1.0",
@@ -12,11 +15,11 @@
     "bootstrap": "^5.1.3",
     "chart.js": "^3.7.1",
     "currency.js": "^2.0.4",
-    "electron": "^17.1.2",
+    "electron-is-dev": "^2.0.0",
     "print-js": "^1.6.0",
     "react": "^17.0.2",
     "react-bootstrap": "^2.2.1",
-    "react-chartjs-2": "^4.0.1",
+    "react-chartjs-2": "^4.1.0",
     "react-dom": "^17.0.2",
     "react-scripts": "5.0.0",
     "react-to-print": "^2.14.6",
@@ -32,8 +35,35 @@
     "test": "react-scripts test",
     "eject": "react-scripts eject",
     "electron:serve": "concurrently -k \"cross-env BROWSER=none npm start\" \"npm run electron:start\"",
-    "electron:build": "",
+    "electron:build": "npm run build && electron-builder -c.extraMetadata.main=build/main.js",
     "electron:start": "wait-on tcp:3000 && electron ."
+  },
+  "build":{
+    "extends":null,
+    "appId":"com.guildbytes.chanji-pos",
+    "mac": {
++     "target": "dmg"
++   },
+    "linux": {
++     "target": "deb"
++   },
+    "win":{
+      "target":["nsis"],
+      "requestedExecutionLevel":"requireAdministrator"
+    },
+    "nsis":{
+      "oneClick":false,
+      "allowToChangeInstallationDirectory":true
+    },
+    "files":[
+      "dist/**/*",
+      "build/**/*",
+      "node_modules/**/*",
+      "package.json"
+    ],
+    "directories":{
+      "buildResources":"assets"
+    }
   },
   "eslintConfig": {
     "extends": [
@@ -43,9 +73,7 @@
   },
   "browserslist": {
     "production": [
-      ">0.2%",
-      "not dead",
-      "not op_mini all"
+      "last 1 electron version"
     ],
     "development": [
       "last 1 chrome version",
@@ -54,6 +82,7 @@
     ]
   },
   "devDependencies": {
+    "electron": "^17.1.2",
     "concurrently": "^7.0.0",
     "cross-env": "^7.0.3",
     "electron-builder": "^22.14.13",

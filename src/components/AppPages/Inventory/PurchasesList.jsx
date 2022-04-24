@@ -29,9 +29,9 @@ const PurchasesList = ({purchases,getItem,getSupplier}) => {
           <tbody>
           {purchases.map((purchase)=>{
                 return {...purchase,
-                    item_id:getItem(purchase.item_id) ? getItem(purchase.item_id).item : '',
-                    supplier_id:getSupplier(purchase.supplier_id) ? getSupplier(purchase.supplier_id).supplier_name : ''
-                  }
+                  item_id:getItem(purchase.item_id) ? getItem(purchase.item_id).item : '',
+                  supplier_id:getSupplier(purchase.supplier_id) ? getSupplier(purchase.supplier_id).supplier_name : ''
+                }
               })
               .filter((purchase)=>(JSON.stringify(purchase).toLowerCase()
               .includes(filterPurchasesField.toLowerCase())))
