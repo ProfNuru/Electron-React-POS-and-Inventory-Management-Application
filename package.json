@@ -42,11 +42,11 @@
     "extends":null,
     "appId":"com.guildbytes.chanji-pos",
     "mac": {
-+     "target": "dmg"
-+   },
+     "target": "dmg"
+   },
     "linux": {
-+     "target": "deb"
-+   },
+     "target": "deb"
+   },
     "win":{
       "target":["nsis"],
       "requestedExecutionLevel":"requireAdministrator"
