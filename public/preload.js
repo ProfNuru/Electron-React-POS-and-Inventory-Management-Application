@@ -4,6 +4,7 @@ const currency = require('currency.js');
 const printJS = require("print-js");
 
 const API = {
+    loading:(callback)=>{return ipcRenderer.on('progress', callback)},
     updatePurchasedItem:(signal,value)=>{return ipcRenderer.send(signal,value)},
     sendAsynchronousIPC:(signal)=>{return ipcRenderer.sendSync(signal)},
     insertNewData:(signal,item)=>{return ipcRenderer.sendSync(signal,item)},
@@ -20,10 +21,10 @@ const API = {
         printJS({
             printable:div,
             type:'html',
-            onPrintDialogClose: cb,
+            onPrintDialogClose:cb,
             style:styles
         })
     }
 }
-
 electron.contextBridge.exposeInMainWorld("api", API);
+

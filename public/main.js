@@ -2,10 +2,11 @@ const electron = require('electron');
 const {app, BrowserWindow} = electron;
 const ipc = electron.ipcMain;
 const path = require('path');
-// const Database = require("./database.js");
 const isDev = require('electron-is-dev');
 const sqlite3 = require('sqlite3').verbose();
+const EventEmitter = require('events');
 
+// const Settings = require("./settings.js");
 // Database tables
 const ITEMS = 'items';
 const SUPPLIERS = 'suppliers';
@@ -14,7 +15,7 @@ const PURCHASES = 'purchases';
 const PAYMENT_STATUSES = 'payment_statuses';
 const INVOICES = 'invoices';
 const SALES = 'sales';
-
+let authWin;
 
 class Database{
     constructor(db_uri="chanjipos_database.db") {
@@ -405,11 +406,20 @@ class Database{
     }
 }
 
+const loadingEvents = new EventEmitter();
 const db = new Database();
+
+// Remove default menu bar from all windows
+// electron.app.on('browser-window-created',function(e,window) {
+//     window.setMenu(null);
+// });
 
 function createWindow(){
     const win = new BrowserWindow({
         show:false,
+        icon: isDev
+        ? path.join(__dirname, "chanji_logo192.png")
+        : `file://${path.join(__dirname,'../build/chanji_logo192.png')}`,
         webPreferences:{
             nodeIntegration:false,
             contextIsolation:true,
@@ -426,7 +436,57 @@ function createWindow(){
         );
 }
 
-app.on('ready', createWindow);
+function authenticationWindow(){
+    authWin = new BrowserWindow({
+        width: 1000,
+        height: 690,
+        icon: isDev
+        ? path.join(__dirname, "chanji_logo192.png")
+        : `file://${path.join(__dirname,'../build/chanji_logo192.png')}`,
+        webPreferences:{
+            // devTools: false,
+            nodeIntegration:false,
+            contextIsolation:true,
+            preload: path.join(__dirname, "preload.js"),
+        }
+    });
+
+    authWin.loadURL(
+        isDev
+        ? path.join(__dirname, "authenticationWindow.html")
+        : `file://${path.join(__dirname,'../build/authenticationWindow.html')}`
+        );
+}
+
+function loadApp(){
+    const splash = new BrowserWindow({
+        width: 800,
+        height: 600,
+        frame: false,
+        transparent:true,
+        icon: isDev
+        ? path.join(__dirname, "chanji_logo192.png")
+        : `file://${path.join(__dirname,'../build/chanji_logo192.png')}`,
+        webPreferences:{
+            nodeIntegration:false,
+            contextIsolation:true,
+            preload: path.join(__dirname, "preload.js"),
+        }
+    });
+    splash.loadURL(
+        isDev
+        ? path.join(__dirname, "splash.html")
+        : `file://${path.join(__dirname,'../build/splash.html')}`
+    );
+    setTimeout(()=>loadingEvents.emit('finished'),5000)
+
+    loadingEvents.on('finished',()=>{
+        splash.close();
+        authenticationWindow();
+    });
+}
+
+app.on('ready', loadApp);
 
 app.on('window-all-closed', function(){
     if(process.platform !== 'darwin'){

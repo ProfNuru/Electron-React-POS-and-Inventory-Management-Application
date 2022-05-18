@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    
+    <link rel="stylesheet" href="bootstrap.min.css">
+    <title>Authenticate</title>
+    <style>
+        *{
+            margin:0;
+            padding:0;
+            box-sizing: border-box;
+        }
+        body{
+            background-image:url('chanji_logo192.png');
+            background-repeat: no-repeat;
+            background-position: center;
+            height:100vh;
+        }
+        main{
+            background:linear-gradient(-135deg,rgba(255,97,0,0.9),rgba(103,0,115,0.9));
+            height:100%;
+            width:100%;
+            padding:10px;
+        }
+        main section{
+            width: 65%;
+            margin: 10px auto;
+        }
+    </style>
+</head>
+<body>
+    <main>
+        <section class="register">
+            <div class="app-authentication">
+                <h2>Authenticate your purchase</h2>
+                <h6>
+                    Use the authentication key sent to your E-mail to authenticate your purchase.<br/>
+                    Or click the '7-day trial' button to try this software before purchasing.
+                </h6>
+                <div class="mb-3">
+                    <label for="userEmail" class="form-label">Email address</label>
+                    <input type="email" class="form-control" id="userEmail" placeholder="name@example.com">
+                </div>
+                <div class="mb-3">
+                    <label for="appAuthKey" class="form-label">Authentication Key</label>
+                    <input type="text" class="form-control" id="appAuthKey">
+                </div>
+            </div>
+            <div class="admin-user-setup">
+                <h2>Set Admin Login Details</h2>                
+                <div class="mb-3">
+                    <label for="admin-username" class="form-label">Username</label>
+                    <input type="text" class="form-control" id="admin-username">
+                </div>
+                <div class="mb-3">
+                    <label for="admin-password1" class="form-label">Password</label>
+                    <input type="password" class="form-control" id="admin-password1">
+                </div>
+                <div class="mb-3">
+                    <label for="admin-password2" class="form-label">Confirm Password</label>
+                    <input type="password" class="form-control" id="admin-password2">
+                </div>
+            </div>
+            <div class="register-buttons">
+                <button class="btn btn-outline-secondary btn-lg" id="to-trial">7-day trial</button>
+                <button class="btn btn-success btn-lg" id="submit-forms">Authenticate</button>
+            </div>
+        </section>
+    </main>
+
+    <script src="bootstrap.bundle.min.js"></script>
+    <script src="authenticationWindow.js"></script>
+</body>
+</html>

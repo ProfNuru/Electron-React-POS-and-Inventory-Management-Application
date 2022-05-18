@@ -4,7 +4,7 @@ import styled from 'styled-components';
 export const SuppliersPage = styled.div`
     display:${(props)=>props.visible ? 'grid':'none'};
     gap: 10px;
-
+    
     & .table-action-header{
         text-align:right;
     }

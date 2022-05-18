@@ -6,7 +6,7 @@ class Database{
     constructor(db_uri="chanjipos_database.db") {
         const URI = (electron.app || electron.remote.app).getPath('userData');
         this.DATABASE = path.join(URI, db_uri);
-    
+
         // Connect to database
         this.DB_CONN = new sqlite3.Database(this.DATABASE, (err)=>{
             if(err){

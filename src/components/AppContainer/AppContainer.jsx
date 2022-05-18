@@ -7,6 +7,7 @@ import Suppliers from '../AppPages/Suppliers/Suppliers';
 import Customers from '../AppPages/Customers/Customers';
 import Sales from '../AppPages/Sales/Sales';
 import RevenueComponent from '../AppPages/Revenue/RevenueComponent';
+import Settings from '../AppPages/Settings/Settings';
 
 export class AppContainer extends Component {
   constructor(){
@@ -113,6 +114,8 @@ export class AppContainer extends Component {
             <RevenueComponent all_items={this.state.items} invoices={this.state.invoices}
             all_sales={this.state.sales} customers={this.state.customers}
             visibility={this.state.pagesDisplayed.showSales} />
+
+            <Settings visibility={this.state.pagesDisplayed.showSettings} />
 
           </div>
       </AppWrapper>
